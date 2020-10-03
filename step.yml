@@ -1,0 +1,118 @@
+#
+# A couple of useful guides & docs:
+#
+# - Main Bitrise CLI docs: https://github.com/bitrise-io/bitrise/tree/master/_docs
+# - Step Development Guideline: https://github.com/bitrise-io/bitrise/blob/master/_docs/step-development-guideline.md
+# - Bitrise.yml format spec: https://github.com/bitrise-io/bitrise/blob/master/_docs/bitrise-yml-format-spec.md
+# - Bitrise docs: http://devcenter.bitrise.io/
+# - Bitrise CLI guides: http://devcenter.bitrise.io/bitrise-cli/
+
+title: |-
+  Notify QRCode Github PR
+summary: |
+  This step notify on github when we do a PR
+description: |
+  This step notify on github when we do a PR or push a commit on an existing branch
+website: https://github.com/iodamien/bitrise-step-notify-qrcode-github-pr
+source_code_url: https://github.com/iodamien/bitrise-step-notify-qrcode-github-pr
+support_url: https://github.com/iodamien/bitrise-step-notify-qrcode-github-pr/issues
+host_os_tags:
+  - osx-10.10
+  - ubuntu-16.04
+
+# If this step should be available only for certain project types
+# just uncomment this `project_type_tags` section and include all the
+# project types supported by the step. If the step can be used for all
+# project types then you can just remove this section.
+# If no `project_type_tags` specified (or specified as an empty array)
+# that means the step can be used for any project type.
+# You can find more information about project type tags in the Step Development Guideline:
+# https://github.com/bitrise-io/bitrise/blob/master/_docs/step-development-guideline.md
+#
+# project_type_tags:
+#   - ios
+#   - macos
+#   - android
+#   - xamarin
+#   - react-native
+#   - cordova
+#   - ionic
+
+# Type tags are used for categorizing steps, for easier step discovery in Step Libraries.
+# You can find more information about type tags in the Step Development Guideline:
+# https://github.com/bitrise-io/bitrise/blob/master/_docs/step-development-guideline.md
+type_tags:
+  - notification
+
+is_requires_admin_user: true
+is_always_run: false
+is_skippable: false
+run_if: ""
+
+deps:
+  brew:
+  - name: git
+  - name: wget
+  apt_get:
+  - name: git
+  - name: wget
+
+
+toolkit:
+  go:
+    package_name: github.com/iodamien/bitrise-step-notify-qrcode-github-pr
+
+
+inputs:
+  - github_token:
+    opts:
+      title: "GitHub personal access token"
+      description: |
+        To setup a **GitHub personal access token** visit: https://github.com/settings/tokens
+        Add repo(Full control of private repositories) scope to the generated token, to allow to comment on GitHub Pull Request or Issue.
+      is_required: true
+      is_sensitive: true
+  - repository_url: "$GIT_REPOSITORY_URL"
+    opts:
+      title: "Repository URL"
+      description: |
+        The URL for target GitHub Repository.
+      is_required: true
+  - branch_name: "$BITRISE_PULL_REQUEST"
+    opts:
+      title: "GitHub Branch Name"
+      description: |
+        Number of GitHub Pull request or Issue.
+      is_required: true
+  - api_base_url: "https://api.github.com"
+    opts:
+      title: "GitHub API Base URL"
+      description: |-
+        The URL for GitHub or GitHub Enterprise API
+      is_required: true
+  - pull_request_id: "$BITRISE_PULL_REQUEST"
+    opts:
+      title: "GitHub Commit Hash"
+      description: |-
+        The URL for GitHub or GitHub Enterprise API
+  - commit: "$BITRISE_GIT_COMMIT"
+    opts:
+      title: "GitHub Commit Hash"
+      description: |-
+        The URL for GitHub or GitHub Enterprise API
+  - comment: ""
+    opts:
+      title: "GitHub Comment to post"
+      description: |-
+        The URL for GitHub or GitHub Enterprise API
+      is_required: true
+
+outputs:
+  - EXAMPLE_STEP_OUTPUT:
+    opts:
+      title: "Example Step Output"
+      summary: Summary. No more than 2-3 sentences.
+      description: |
+        Description of this output.
+
+        Can be Markdown formatted text.
