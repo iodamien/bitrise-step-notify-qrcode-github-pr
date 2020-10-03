@@ -90,6 +90,7 @@ func main() {
 		log.Errorf("Error: %s\n", err)
 		os.Exit(1)
 	}
+	stepconf.Print(conf)
 
 	owner, repo := ownerAndRepo(conf.RepositoryURL)
 
@@ -101,9 +102,6 @@ func main() {
 		}
 		conf.PullRequestId = strconv.FormatInt(pr, 10)
 	}
-
-
-	stepconf.Print(conf)
 
 	// Post Comment
 	url := fmt.Sprintf("%s/repos/%s/%s/issues/%s/comments", conf.APIBaseURL, owner, repo, conf.PullRequestId)
