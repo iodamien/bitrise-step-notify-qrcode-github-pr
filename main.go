@@ -23,6 +23,17 @@ type Config struct {
 	Commit        string `env:"commit"`
 }
 
+type User struct {
+	Id json.Number `json:"id"`
+	Login string `json:"login"`
+}
+
+type IssueComment struct {
+	Id json.Number `json:"id"`
+	Body string `json:"body"`
+	User User
+}
+
 type Payload struct {
 	Body string `json:"body"`
 }
@@ -74,7 +85,95 @@ func findIssueByBranchName(config Config, owner string, repo string) (int64, err
 			return el.Number.Int64()
 		}
 	}
+
+	defer resp.Body.Close()
+
 	return -1, fmt.Errorf("failed to found PR")
+}
+
+func getUserId(config Config, user *User) error {
+	url := fmt.Sprintf("%s/user", config.APIBaseURL)
+	req, err := http.NewRequest("GET", url, nil)
+	log.Debugf("url: %s", url)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Authorization", "token "+ string(config.AuthToken))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+
+	res, err := http.DefaultClient.Do(req)
+
+	if err != nil {
+		return err
+	}
+
+	respBody, _ := ioutil.ReadAll(res.Body)
+	log.Debugf("get user: %s", respBody)
+	err = json.Unmarshal(respBody, user)
+
+	if err != nil {
+		return err
+	}
+
+	defer res.Body.Close()
+
+	return nil
+}
+
+func deletePreviousComment(config Config, owner string, repo string, currentUserId int64, newCommentId int64)  {
+
+	// Get all comments on the issue
+	getCommentsURL := fmt.Sprintf("%s/repos/%s/%s/issues/%s/comments", config.APIBaseURL, owner, repo, config.PullRequestId)
+	req, err := http.NewRequest("GET", getCommentsURL, nil)
+
+	if err != nil {
+		log.Errorf("Error: %s\n", err)
+		return
+	}
+
+	req.Header.Set("Authorization", "token "+ string(config.AuthToken))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+
+	res, err := http.DefaultClient.Do(req)
+
+	if err != nil {
+		log.Errorf("Error: %s\n", err)
+		return
+	}
+
+	respBody, _ := ioutil.ReadAll(res.Body)
+	var comments = make([]IssueComment, 0)
+	err = json.Unmarshal(respBody, &comments)
+	for _, el := range comments {
+		userId, err := el.User.Id.Int64()
+		if  err == nil {
+			commentId, _ := el.Id.Int64()
+			if userId == currentUserId && commentId != newCommentId{
+				deleteComment(config, owner, repo, commentId)
+			}
+		} else {
+			log.Errorf("Error: %s\n", err)
+		}
+	}
+}
+
+func deleteComment(config Config, owner string, repo string, commentId int64)  {
+	url := fmt.Sprintf("%s/repos/%s/%s/issues/comments/%d", config.APIBaseURL, owner, repo, commentId)
+	req, err := http.NewRequest("DELETE", url, nil)
+
+	if err != nil {
+		log.Errorf("Error: %s\n", err)
+		return
+	}
+
+	req.Header.Set("Authorization", "token "+ string(config.AuthToken))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+
+	http.DefaultClient.Do(req)
 }
 
 func ownerAndRepo(url string) (string, string) {
@@ -135,7 +234,27 @@ func main() {
 	}
 	respBody, _ := ioutil.ReadAll(resp.Body)
 	log.Successf("Success: %s\n", respBody)
+
+	var comment IssueComment
+	err = json.Unmarshal(respBody, &comment)
+	commentId, _ := comment.Id.Int64()
+
 	defer resp.Body.Close()
+
+	// Delete previous comment
+	var user User
+	err = getUserId(conf, &user)
+
+	if err == nil {
+		userId, err := user.Id.Int64()
+		if err == nil {
+			deletePreviousComment(conf, owner, repo, userId, commentId)
+		} else {
+			log.Errorf("Error: %s\n", err)
+		}
+	} else {
+		log.Errorf("Error: %s\n", err)
+	}
 
 	os.Exit(0)
 }
