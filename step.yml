@@ -100,7 +100,7 @@ inputs:
       title: "GitHub Commit Hash"
       description: |-
         The URL for GitHub or GitHub Enterprise API
-  - apk_path: "$BITRISE_APK_PATH"
+  - apk_path: "$BITRISE_PUBLIC_INSTALL_PAGE_URL"
     opts:
       title: "APK URL"
       description: |-
