@@ -12,7 +12,7 @@ app:
   - MY_STEPLIB_REPO_FORK_GIT_URL: $MY_STEPLIB_REPO_FORK_GIT_URL
 
   - GITHUB_TOKEN: "$GITHUB_TOKEN"
-  - COMMENT: "$COMMENT"
+  - APK_PATH: "$APK_PATH"
   - RESPOSITORY_URL: "$REPOSITORY_URL"
   - BRANCH_NAME: "$BRANCH_NAME"
   - API_BASE_URL: "$API_BASE_URL"
@@ -49,7 +49,7 @@ workflows:
         run_if: true
         inputs:
         - github_token: "$GITHUB_TOKEN"
-        - comment: "$COMMENT"
+        - apk_path: "$APK_PATH"
         - repository_url: "$REPOSITORY_URL"
         - branch_name: "$BRANCH_NAME"
         - api_base_url: "$API_BASE_URL"

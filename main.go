@@ -15,7 +15,7 @@ import (
 
 type Config struct {
 	AuthToken     stepconf.Secret `env:"github_token,required"`
-	Comment       string `env:"comment,required"`
+	ApkPath       string `env:"apk_path,required"`
 	RepositoryURL string `env:"repository_url,required"`
 	BranchName    string `env:"branch_name,required"`
 	APIBaseURL    string `env:"api_base_url,required"`
@@ -106,7 +106,9 @@ func main() {
 	// Post Comment
 	url := fmt.Sprintf("%s/repos/%s/%s/issues/%s/comments", conf.APIBaseURL, owner, repo, conf.PullRequestId)
 	fmt.Println(url)
-	data := Payload{conf.Comment}
+	var googleAPiQRCode = fmt.Sprintf("http://chart.apis.google.com/chart?cht=qr&chs=200x200&chld=L|0&chl=%s", conf.ApkPath)
+	var qrCodeMarkDown = fmt.Sprintf("![QrCode](%s)", googleAPiQRCode)
+	data := Payload{ qrCodeMarkDown }
 
 	payloadBytes, err := json.Marshal(data)
 

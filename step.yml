@@ -100,9 +100,9 @@ inputs:
       title: "GitHub Commit Hash"
       description: |-
         The URL for GitHub or GitHub Enterprise API
-  - comment: ""
+  - apk_path: "$BITRISE_APK_PATH"
     opts:
-      title: "GitHub Comment to post"
+      title: "APK URL"
       description: |-
         The URL for GitHub or GitHub Enterprise API
       is_required: true
