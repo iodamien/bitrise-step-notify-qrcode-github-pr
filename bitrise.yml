@@ -11,6 +11,14 @@ app:
   - BITRISE_STEP_GIT_CLONE_URL: https://github.com/iodamien/bitrise-step-notify-qrcode-github-pr.git
   - MY_STEPLIB_REPO_FORK_GIT_URL: $MY_STEPLIB_REPO_FORK_GIT_URL
 
+  - GITHUB_TOKEN: "$GITHUB_TOKEN"
+  - COMMENT: "$COMMENT"
+  - RESPOSITORY_URL: "$REPOSITORY_URL"
+  - BRANCH_NAME: "$BRANCH_NAME"
+  - API_BASE_URL: "$API_BASE_URL"
+  - PR_ID: "$PR_ID"
+  - COMMIT: "$COMMIT"
+
 workflows:
   test:
     steps:
@@ -40,7 +48,14 @@ workflows:
           file if you would not specify another value.
         run_if: true
         inputs:
-        - example_step_input: Example Step Input's value
+        - github_token: "$GITHUB_TOKEN"
+        - comment: "$COMMENT"
+        - repository_url: "$REPOSITORY_URL"
+        - branch_name: "$BRANCH_NAME"
+        - api_base_url: "$API_BASE_URL"
+        - pull_request_id: "$PR_ID"
+        - commit: "$COMMIT"
+
     - script:
         inputs:
         - content: |

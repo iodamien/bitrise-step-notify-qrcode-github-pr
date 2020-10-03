@@ -15,12 +15,12 @@ import (
 
 type Config struct {
 	AuthToken     stepconf.Secret `env:"github_token,required"`
-	Comment       string 		  `env:"comment,required"`
-	RepositoryURL string          `env:"repository_url,required"`
-	BranchName    string          `env:"branch_name,required"`
-	APIBaseURL    string          `env:"api_base_url,required"`
-	PullRequestId string          `env:"pull_request_id"`
-	Commit string          `env:"commit"`
+	Comment       string `env:"comment,required"`
+	RepositoryURL string `env:"repository_url,required"`
+	BranchName    string `env:"branch_name,required"`
+	APIBaseURL    string `env:"api_base_url,required"`
+	PullRequestId string `env:"pull_request_id"`
+	Commit        string `env:"commit"`
 }
 
 type Payload struct {
@@ -37,18 +37,14 @@ type PullRequest struct {
 	Head  Head
 }
 
-type PullRequestResponse struct {
-	Collection []PullRequest
-}
-
-func findIssueByBranchName(apiURL string, owner string, repo string, token string, branchName string, sha256 string) (int64, error) {
-	url := fmt.Sprintf("%s/repos/%s/%s/pulls", apiURL, owner, repo)
+func findIssueByBranchName(config Config, owner string, repo string) (int64, error) {
+	url := fmt.Sprintf("%s/repos/%s/%s/pulls", config.APIBaseURL, owner, repo)
 	req, err := http.NewRequest("GET", url, nil)
-	req.Header.Set("Authorization", "token "+token)
+	req.Header.Set("Authorization", "token "+ string(config.AuthToken))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 	q := req.URL.Query()
-	q.Add("head", owner+":"+branchName)
+	q.Add("head", owner+":"+ string(config.BranchName))
 	req.URL.RawQuery = q.Encode()
 
 	if err != nil {
@@ -64,7 +60,7 @@ func findIssueByBranchName(apiURL string, owner string, repo string, token strin
 	}
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
-	log.Successf("Success: %s\n", respBody)
+
 	var p = make([]PullRequest, 0)
 	err = json.Unmarshal(respBody, &p)
 
@@ -74,7 +70,7 @@ func findIssueByBranchName(apiURL string, owner string, repo string, token strin
 	}
 
 	for _, el := range p {
-		if el.State == "open" && el.Head.Sha == sha256 {
+		if el.State == "open" && el.Head.Sha == config.Commit {
 			return el.Number.Int64()
 		}
 	}
@@ -98,7 +94,7 @@ func main() {
 	owner, repo := ownerAndRepo(conf.RepositoryURL)
 
 	if conf.PullRequestId == "" {
-		pr, err := findIssueByBranchName(conf.APIBaseURL, owner, repo, string(conf.AuthToken), conf.BranchName, conf.Commit)
+		pr, err := findIssueByBranchName(conf, owner, repo)
 		if err != nil {
 			log.Errorf("Error: %s\n", err)
 			os.Exit(1)
@@ -111,7 +107,7 @@ func main() {
 
 	// Post Comment
 	url := fmt.Sprintf("%s/repos/%s/%s/issues/%s/comments", conf.APIBaseURL, owner, repo, conf.PullRequestId)
-
+	fmt.Println(url)
 	data := Payload{conf.Comment}
 
 	payloadBytes, err := json.Marshal(data)
