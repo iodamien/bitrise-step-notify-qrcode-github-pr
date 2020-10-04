@@ -188,7 +188,7 @@ func main() {
 
 	if err := stepconf.Parse(&conf); err != nil {
 		log.Errorf("Error: %s\n", err)
-		os.Exit(1)
+		os.Exit(0)
 	}
 	stepconf.Print(conf)
 
@@ -198,7 +198,7 @@ func main() {
 		pr, err := findIssueByBranchName(conf, owner, repo)
 		if err != nil {
 			log.Errorf("Error: %s\n", err)
-			os.Exit(1)
+			os.Exit(0)
 		}
 		conf.PullRequestId = strconv.FormatInt(pr, 10)
 	}
@@ -214,7 +214,7 @@ func main() {
 
 	if err != nil {
 		log.Errorf("Error: %s\n", err)
-		os.Exit(1)
+		os.Exit(0)
 	}
 
 	body := bytes.NewReader(payloadBytes)
@@ -222,7 +222,7 @@ func main() {
 	req, err := http.NewRequest("POST", url, body)
 	if err != nil {
 		log.Errorf("Error: %s\n", err)
-		os.Exit(1)
+		os.Exit(0)
 	}
 	req.Header.Set("Authorization", "token " + string(conf.AuthToken))
 	req.Header.Set("Content-Type", "application/json")
@@ -231,7 +231,7 @@ func main() {
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		log.Errorf("Error: %s\n", err)
-		os.Exit(1)
+		os.Exit(0)
 	}
 	respBody, _ := ioutil.ReadAll(resp.Body)
 	log.Successf("Success: %s\n", respBody)
