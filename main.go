@@ -51,17 +51,18 @@ type PullRequest struct {
 func findIssueByBranchName(config Config, owner string, repo string) (int64, error) {
 	url := fmt.Sprintf("%s/repos/%s/%s/pulls", config.APIBaseURL, owner, repo)
 	req, err := http.NewRequest("GET", url, nil)
-	req.Header.Set("Authorization", "token "+ string(config.AuthToken))
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Accept", "application/json")
-	q := req.URL.Query()
-	q.Add("head", owner+":"+ string(config.BranchName))
-	req.URL.RawQuery = q.Encode()
 
 	if err != nil {
 		log.Errorf("Error: %s\n", err)
 		return -1, err
 	}
+
+	req.Header.Set("Authorization", "token "+ string(config.AuthToken))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+	q := req.URL.Query()
+	q.Add("head", owner+":"+config.BranchName)
+	req.URL.RawQuery = q.Encode()
 
 	resp, err := http.DefaultClient.Do(req)
 
